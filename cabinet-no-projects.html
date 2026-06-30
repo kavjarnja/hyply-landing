@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hyply.ai - Cabinet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet" />
+    <link rel="icon" href="./assets/logo-hyply.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="cabinet-body">
+    <main class="cabinet-app">
+      <aside class="cabinet-sidebar" aria-label="Особистий кабінет">
+        <div class="cabinet-logo-row">
+          <a class="cabinet-logo" href="./cabinet-no-projects.html" aria-label="Hyply.ai cabinet">
+            <img src="./assets/logo-hyply.svg" alt="Hyply.ai" />
+          </a>
+          <button class="cabinet-menu-toggle" type="button" aria-label="Відкрити меню" aria-expanded="false" data-cabinet-menu-toggle>
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+
+        <div class="cabinet-sidebar-panel" data-cabinet-sidebar-panel>
+        <a class="cabinet-profile" href="./profile.html" data-profile-link>
+          <span class="cabinet-avatar" data-profile-avatar>ВМ</span>
+          <span class="cabinet-profile-text">
+            <strong data-profile-name>Валентина Милашевська</strong>
+            <small data-profile-email>valentyna@gmail.com</small>
+          </span>
+          <span class="cabinet-chevron" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#profile-arrow-clip)">
+                <path d="M5.64645 11.6464C5.45118 11.8417 5.45118 12.1582 5.64645 12.3535C5.84171 12.5487 6.15822 12.5487 6.35348 12.3535L10.3535 8.35348C10.5487 8.15822 10.5487 7.84171 10.3535 7.64645L6.35348 3.64645C6.15822 3.45118 5.84171 3.45118 5.64645 3.64645C5.45118 3.84171 5.45118 4.15822 5.64645 4.35348L9.29293 7.99996L5.64645 11.6464Z" fill="#A19EB2"/>
+              </g>
+              <defs>
+                <clipPath id="profile-arrow-clip">
+                  <rect width="16" height="16" fill="white"/>
+                </clipPath>
+              </defs>
+            </svg>
+          </span>
+        </a>
+
+        <div class="cabinet-divider"></div>
+
+        <section class="cabinet-projects" aria-labelledby="projects-title">
+          <div class="cabinet-projects-head">
+            <h2 id="projects-title">Проєкти</h2>
+            <button class="create-project-trigger" type="button" aria-label="Створити проєкт">
+              <img src="./assets/figma/d57aaef7-0a1c-4320-b70b-1c0c00c8bee2.svg" alt="" />
+            </button>
+          </div>
+          <p>Ще немає проєктів, створіть перший!</p>
+          <button class="cabinet-create create-project-trigger" type="button">
+            <span aria-hidden="true">
+              <img src="./assets/figma/8137f921-da9a-4d4f-bd91-7c2dbed1d9fc.svg" alt="" />
+            </span>
+            Створити проект
+          </button>
+        </section>
+
+        <div class="cabinet-sidebar-spacer"></div>
+        <div class="cabinet-divider"></div>
+
+        <a class="cabinet-logout" href="./index.html">
+          <span aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.2842 9.71L18.5842 11L6.9942 11C6.72898 11 6.47463 11.1054 6.28709 11.2929C6.09956 11.4804 5.9942 11.7348 5.9942 12C5.9942 12.2652 6.09956 12.5196 6.28709 12.7071C6.47463 12.8946 6.72898 13 6.9942 13L18.5842 13L17.2842 14.29C17.1905 14.383 17.1161 14.4936 17.0653 14.6154C17.0145 14.7373 16.9884 14.868 16.9884 15C16.9884 15.132 17.0145 15.2627 17.0653 15.3846C17.1161 15.5064 17.1905 15.617 17.2842 15.71C17.3772 15.8037 17.4878 15.8781 17.6096 15.9289C17.7315 15.9797 17.8622 16.0058 17.9942 16.0058C18.1262 16.0058 18.2569 15.9797 18.3788 15.9289C18.5006 15.8781 18.6112 15.8037 18.7042 15.71L21.7042 12.71C21.7979 12.617 21.8723 12.5064 21.9231 12.3846C21.9739 12.2627 22 12.132 22 12C22 11.868 21.9739 11.7373 21.9231 11.6154C21.8723 11.4936 21.7979 11.383 21.7042 11.29L18.7042 8.29C18.5159 8.1017 18.2605 7.99591 17.9942 7.99591C17.7279 7.99591 17.4725 8.1017 17.2842 8.29C17.0959 8.4783 16.9901 8.7337 16.9901 9C16.9901 9.2663 17.0959 9.5217 17.2842 9.71ZM14.9942 18L14.9942 16C14.9942 15.7348 14.8888 15.4804 14.7013 15.2929C14.5138 15.1054 14.2594 15 13.9942 15C13.729 15 13.4746 15.1054 13.2871 15.2929C13.0996 15.4804 12.9942 15.7348 12.9942 16L12.9942 18C12.9942 18.2652 12.8888 18.5196 12.7013 18.7071C12.5138 18.8946 12.2594 19 11.9942 19L4.9942 19C4.72898 19 4.47463 18.8946 4.28709 18.7071C4.09956 18.5196 3.9942 18.2652 3.9942 18L3.9942 6C3.9942 5.73478 4.09956 5.48043 4.28709 5.29289C4.47463 5.10536 4.72898 5 4.9942 5L11.9942 5C12.2594 5 12.5138 5.10536 12.7013 5.29289C12.8888 5.48043 12.9942 5.73478 12.9942 6L12.9942 8C12.9942 8.26522 13.0996 8.51957 13.2871 8.70711C13.4746 8.89464 13.729 9 13.9942 9C14.2594 9 14.5138 8.89464 14.7013 8.70711C14.8888 8.51957 14.9942 8.26522 14.9942 8L14.9942 6C14.9942 5.20435 14.6781 4.44129 14.1155 3.87868C13.5529 3.31607 12.7899 3 11.9942 3L4.9942 3C4.19855 3 3.43549 3.31607 2.87288 3.87868C2.31027 4.44129 1.9942 5.20435 1.9942 6L1.9942 18C1.9942 18.7956 2.31027 19.5587 2.87288 20.1213C3.43549 20.6839 4.19855 21 4.9942 21L11.9942 21C12.7899 21 13.5529 20.6839 14.1155 20.1213C14.6781 19.5587 14.9942 18.7956 14.9942 18Z" fill="#A19EB2"/>
+            </svg>
+          </span>
+          Вийти
+        </a>
+        </div>
+      </aside>
+
+      <section class="cabinet-main" aria-labelledby="upload-title">
+        <div class="upload-card">
+          <header class="upload-card-header">
+            <h1 id="upload-title">Завантажити дані</h1>
+            <p>Завантажте файли з відгуками клієнтів для аналізу</p>
+          </header>
+
+          <div class="upload-card-body">
+            <div class="upload-row">
+              <div class="upload-files-column">
+                <label class="drop-zone" for="feedback-files">
+                  <input id="feedback-files" type="file" accept=".csv,.txt,.md,text/csv,text/plain,text/markdown,text/x-markdown" multiple />
+                  <span class="drop-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img">
+                      <path d="M12 4v11" />
+                      <path d="M8 8l4-4 4 4" />
+                      <path d="M5 15v4h14v-4" />
+                    </svg>
+                  </span>
+                  <span class="drop-title">
+                    <strong>Перетягніть файли сюди або</strong>
+                    <span>Завантажити файли</span>
+                  </span>
+                  <small>CSV, TXT, MD - до 50 МБ кожен</small>
+                </label>
+
+                <div class="uploaded-files" aria-label="Завантажені файли" hidden></div>
+              </div>
+
+              <div class="project-form">
+                <label for="project-name">Назва проєкту</label>
+                <input id="project-name" type="text" placeholder='Наприклад, "Проєкт №1"' />
+                <button type="button" disabled>
+                  <span aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 6.5C12.2761 6.5 12.5 6.72386 12.5 7V17.667C12.4998 17.943 12.276 18.167 12 18.167C11.724 18.167 11.5002 17.943 11.5 17.667V7C11.5 6.72386 11.7239 6.5 12 6.5Z" fill="white"/>
+                      <path d="M16 10.167C16.2761 10.167 16.5 10.3908 16.5 10.667V17.334C16.4996 17.6098 16.2759 17.834 16 17.834C15.7241 17.834 15.5004 17.6098 15.5 17.334V10.667C15.5 10.3908 15.7239 10.167 16 10.167Z" fill="white"/>
+                      <path d="M8 12.833C8.27614 12.833 8.5 13.0569 8.5 13.333V17.333C8.5 17.6092 8.27614 17.833 8 17.833C7.72386 17.833 7.5 17.6092 7.5 17.333V13.333C7.5 13.0569 7.72386 12.833 8 12.833Z" fill="white"/>
+                    </svg>
+                  </span>
+                  Проаналізувати
+                </button>
+              </div>
+            </div>
+
+            <footer class="upload-info">
+              <section class="recommended-sources" aria-labelledby="sources-title">
+                <h2 id="sources-title">Рекомендовані джерела</h2>
+                <div>
+                  <ul>
+                    <li>User interviews</li>
+                    <li>Support tickets</li>
+                    <li>App Store reviews</li>
+                  </ul>
+                  <ul>
+                    <li>NPS comments</li>
+                    <li>Sales call notes</li>
+                  </ul>
+                </div>
+              </section>
+
+              <section class="supported-formats" aria-labelledby="formats-title">
+                <h2 id="formats-title">Підтримувані формати</h2>
+                <div>
+                  <span>CSV</span>
+                  <span>TXT</span>
+                  <span>MD</span>
+                </div>
+              </section>
+            </footer>
+          </div>
+        </div>
+      </section>
+    </main>
+    <div class="project-modal-overlay" data-modal="create-project" hidden>
+      <section class="create-project-modal" role="dialog" aria-modal="true" aria-labelledby="create-project-title">
+        <button class="modal-icon-button modal-close" type="button" data-close-modal aria-label="Закрити">
+          <img src="./assets/figma/f9375fdf-83f5-447a-a96b-e77e4164cdec.svg" alt="" />
+        </button>
+        <img class="create-project-illustration" src="./assets/figma/d5da7ffc-5c46-422f-afcd-b4065bdb4305.png" alt="" />
+        <h2 id="create-project-title">Створити проєкт</h2>
+        <form class="create-project-form">
+          <label for="modal-project-name">Назва проєкту</label>
+          <input id="modal-project-name" type="text" placeholder="Наприклад, “Проєкт №1”" />
+          <div class="create-project-actions">
+            <button class="modal-secondary-button" type="button" data-close-modal>Скасувати</button>
+            <button class="modal-primary-button" type="submit">Створити проєкт</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <div class="project-modal-overlay" data-modal="upload-project" hidden>
+      <section class="project-upload-modal" role="dialog" aria-modal="true" aria-labelledby="project-upload-title">
+        <header class="project-upload-header">
+          <div>
+            <h2 id="project-upload-title">Завантажити дані</h2>
+            <p>Завантажте файли з відгуками клієнтів для аналізу</p>
+          </div>
+          <button class="modal-icon-button" type="button" data-close-modal aria-label="Закрити">
+            <img src="./assets/figma/f9375fdf-83f5-447a-a96b-e77e4164cdec.svg" alt="" />
+          </button>
+        </header>
+        <div class="project-upload-body">
+          <div class="upload-files-column">
+            <label class="drop-zone modal-drop-zone" for="modal-feedback-files">
+              <input id="modal-feedback-files" type="file" accept=".csv,.txt,.md,text/csv,text/plain,text/markdown,text/x-markdown" multiple />
+              <span class="drop-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="img">
+                  <path d="M12 4v11" />
+                  <path d="M8 8l4-4 4 4" />
+                  <path d="M5 15v4h14v-4" />
+                </svg>
+              </span>
+              <span class="drop-title">
+                <strong>Перетягніть файли сюди або</strong>
+                <span>Завантажити файли</span>
+              </span>
+              <small>CSV, TXT, MD - до 50 МБ кожен</small>
+            </label>
+            <div class="uploaded-files modal-uploaded-files" aria-label="Завантажені файли" hidden></div>
+          </div>
+          <footer class="upload-info modal-upload-info">
+            <section class="recommended-sources" aria-labelledby="modal-sources-title">
+              <h2 id="modal-sources-title">Рекомендовані джерела</h2>
+              <div>
+                <ul>
+                  <li>User interviews</li>
+                  <li>Support tickets</li>
+                  <li>App Store reviews</li>
+                </ul>
+                <ul>
+                  <li>NPS comments</li>
+                  <li>Sales call notes</li>
+                </ul>
+              </div>
+            </section>
+            <section class="supported-formats" aria-labelledby="modal-formats-title">
+              <h2 id="modal-formats-title">Підтримувані формати</h2>
+              <div>
+                <span>CSV</span>
+                <span>TXT</span>
+                <span>MD</span>
+              </div>
+            </section>
+          </footer>
+          <div class="project-form modal-project-form">
+            <label for="modal-upload-project-name">Назва проєкту</label>
+            <div class="modal-project-actions">
+              <input id="modal-upload-project-name" type="text" value="" />
+              <button type="button" disabled>
+                <span aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 6.5C12.2761 6.5 12.5 6.72386 12.5 7V17.667C12.4998 17.943 12.276 18.167 12 18.167C11.724 18.167 11.5002 17.943 11.5 17.667V7C11.5 6.72386 11.7239 6.5 12 6.5Z" fill="white" />
+                    <path d="M16 10.167C16.2761 10.167 16.5 10.3908 16.5 10.667V17.334C16.4996 17.6098 16.2759 17.834 16 17.834C15.7241 17.834 15.5004 17.6098 15.5 17.334V10.667C15.5 10.3908 15.7239 10.167 16 10.167Z" fill="white" />
+                    <path d="M8 12.833C8.27614 12.833 8.5 13.0569 8.5 13.333V17.333C8.5 17.6092 8.27614 17.833 8 17.833C7.72386 17.833 7.5 17.6092 7.5 17.333V13.333C7.5 13.0569 7.72386 12.833 8 12.833Z" fill="white" />
+                  </svg>
+                </span>
+                Проаналізувати
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
