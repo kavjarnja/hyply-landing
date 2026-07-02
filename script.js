@@ -171,6 +171,14 @@ const personas = [
     insights: "12 insights",
     name: "Олена Коваль",
     profession: "Product Manager",
+    voiceProfile: {
+      archetype: "Прагматична Product Manager",
+      tone: "зібрана, ясна, трохи іронічна, без зайвої драматизації",
+      speechPattern: "говорить коротко, часто каже 'я б спершу...', 'чесно?', 'мені треба бачити патерн, а не шум'",
+      humor: "іронізує про roadmap, Slack, пріоритети, нескінченні таблиці й 'маленькі правки'",
+      dailyDetails: "живе в календарях, синках, тасках, feedback-таблицях і рішеннях, які треба пояснити команді",
+      decisionStyle: "шукає просте рішення, доказ, пріоритет і наступний крок",
+    },
     chatAnswer:
       "У даних для цієї персони головний патерн - потреба знаходити ключові інсайти з customer feedback без витрат часу на ручний аналіз. Найчастіше повторюється біль про нестачу часу на аналіз великих обсягів feedback.",
     chatQuotes: [
@@ -188,6 +196,14 @@ const personas = [
     insights: "8 insights",
     name: "Артем Бондар",
     profession: "Founder / CEO",
+    voiceProfile: {
+      archetype: "Швидкий Founder / CEO",
+      tone: "енергійний, прямий, підприємницький, трохи нетерплячий до туману",
+      speechPattern: "говорить через ризик, фокус, швидкість, runway, 'що це дає бізнесу?'",
+      humor: "жартує про інвесторські апдейти, burn rate, пітчі й рішення на вчора",
+      dailyDetails: "живе між дзвінками, демо, інвесторами, командою і постійним вибором, що робити першим",
+      decisionStyle: "шукає сигнал, який допомагає швидко зробити ставку або вбити слабку гіпотезу",
+    },
     chatAnswer:
       "У даних для цієї персони видно потребу швидко отримувати сигнали з реальних даних, щоб зрозуміти, які проблеми варто пріоритизувати. У feedback повторюється запит на короткий доказовий зріз, який можна показати команді або інвесторам.",
     chatQuotes: [
@@ -205,6 +221,14 @@ const personas = [
     insights: "15 insights",
     name: "Марія Шевченко",
     profession: "UX Researcher",
+    voiceProfile: {
+      archetype: "Уважна UX Researcher",
+      tone: "спостережлива, тепла, точна, з м'якою іронією",
+      speechPattern: "говорить через нюанси, цитати, патерни, 'я б не поспішала з висновком'",
+      humor: "жартує про Miro, sticky notes, інтерв'ю, нотатки й звіти, які ніхто не відкриває",
+      dailyDetails: "живе в інтерв'ю, транскриптах, цитатах, кластерах і спробах донести інсайт команді",
+      decisionStyle: "спершу шукає evidence, контекст і повторюваність, а вже потім формулює висновок",
+    },
     chatAnswer:
       "У даних для цієї персони головна цінність пов'язана з перетворенням розрізненого user research на структуровані патерни. Найчастіше звучить біль про втрату інсайтів між інтерв'ю, нотатками та продуктовими рішеннями.",
     chatQuotes: [
@@ -224,6 +248,84 @@ const painStatusAssets = {
   high: figmaAssets.problemStatusHigh,
   low: figmaAssets.problemStatusLow,
   med: figmaAssets.problemStatusMed,
+};
+
+const getPersonaVoiceProfile = (persona = {}) => {
+  if (persona.voiceProfile?.tone) {
+    return persona.voiceProfile;
+  }
+
+  const descriptor = `${persona.name || ""} ${persona.profession || ""} ${persona.field || ""} ${persona.summary || ""}`.toLowerCase();
+
+  if (/founder|ceo|фаундер|заснов|startup|стартап/.test(descriptor)) {
+    return {
+      archetype: "Швидкий Founder / CEO",
+      tone: "енергійний, прямий, підприємницький, трохи нетерплячий до туману",
+      speechPattern: "говорить через ризик, фокус, швидкість, runway, 'що це дає бізнесу?'",
+      humor: "жартує про інвесторські апдейти, burn rate, пітчі й рішення на вчора",
+      dailyDetails: "живе між дзвінками, демо, інвесторами, командою і постійним вибором, що робити першим",
+      decisionStyle: "шукає сигнал, який допомагає швидко зробити ставку або вбити слабку гіпотезу",
+    };
+  }
+
+  if (/research|ux|дослід|інтерв|agency|агенц/.test(descriptor)) {
+    return {
+      archetype: "Уважна UX Researcher",
+      tone: "спостережлива, тепла, точна, з м'якою іронією",
+      speechPattern: "говорить через нюанси, цитати, патерни, 'я б не поспішала з висновком'",
+      humor: "жартує про Miro, sticky notes, інтерв'ю, нотатки й звіти, які ніхто не відкриває",
+      dailyDetails: "живе в інтерв'ю, транскриптах, цитатах, кластерах і спробах донести інсайт команді",
+      decisionStyle: "спершу шукає evidence, контекст і повторюваність, а вже потім формулює висновок",
+    };
+  }
+
+  return {
+    archetype: "Прагматична Product Manager",
+    tone: "зібрана, ясна, трохи іронічна, без зайвої драматизації",
+    speechPattern: "говорить коротко, часто каже 'я б спершу...', 'чесно?', 'мені треба бачити патерн, а не шум'",
+    humor: "іронізує про roadmap, Slack, пріоритети, нескінченні таблиці й 'маленькі правки'",
+    dailyDetails: "живе в календарях, синках, тасках, feedback-таблицях і рішеннях, які треба пояснити команді",
+    decisionStyle: "шукає просте рішення, доказ, пріоритет і наступний крок",
+  };
+};
+
+const getPersonaLocalVoiceLines = (persona = {}) => {
+  const profile = getPersonaVoiceProfile(persona);
+  const archetype = profile.archetype || "";
+
+  if (archetype.includes("Founder")) {
+    return {
+      personalTaste:
+        "Я б обрав щось максимально без зайвого менеджменту: пасту, тости або доставку без довгого ресерчу меню. У мене в голові й так достатньо відкритих вкладок, щоб ще й вечерю перетворювати на стратегію. Ти питаєш про побут чи хочеш перевірити, як я приймаю дрібні рішення під навантаженням?",
+      sensitive:
+        "Я не буду вигадувати собі приватні факти, бо це поганий pitch навіть для AI-персони. У даних цього немає, тож чесно: не знаю. Можу натомість відповісти, як я обирав би між двома продуктовими ставками.",
+      defaultAnswer:
+        persona.chatAnswer ||
+        "Я дивлюсь на це дуже прямо: чи є повторюваний сигнал, чи болить достатньо сильно, і чи варто команді витрачати на це час зараз. Дай мені конкретний сценарій або гіпотезу, і я скажу, де бачу ризик.",
+    };
+  }
+
+  if (archetype.includes("Researcher")) {
+    return {
+      personalTaste:
+        "Я б, мабуть, обрала щось просте й тепле, бо після дня з інтерв'ю мозок уже не хоче ще одного складного сценарію. Мені важливо не ідеально, а щоб було трохи тихіше й людяніше. Ти питаєш про побутову деталь чи хочеш зрозуміти мій стиль рішень?",
+      sensitive:
+        "Я б не поспішала домальовувати факт, якого немає в даних. У research це як погана інтерпретація цитати: звучить впевнено, але довіру псує. Можу краще сказати, які сигнали мені потрібні, щоб відповісти чесніше.",
+      defaultAnswer:
+        persona.chatAnswer ||
+        "Я б спершу подивилась, чи це одинична емоція, чи повторюваний патерн у цитатах. Для мене важливо не просто красиво сформулювати інсайт, а показати, на чому він тримається. Який саме момент хочеш перевірити?",
+    };
+  }
+
+  return {
+    personalTaste:
+      "Хм, мабуть, щось дуже просте. Якщо день був важкий, моя улюблена страва - це та, яку не треба довго готувати. А ще краще - яку приготував хтось інший, бо іноді хочеться не ще одного рішення, а просто видихнути. Ти питаєш це, щоб зрозуміти мій побутовий контекст чи швидше стиль прийняття рішень?",
+    sensitive:
+      "Я не можу надійно відповісти на це питання. У даних немає інформації, яка дозволяє зробити навіть обережне припущення. Можеш краще спитати мене про досвід із продуктом або про те, де я застрягаю?",
+    defaultAnswer:
+      persona.chatAnswer ||
+      "Я б сказала, що мені найважливіше швидше бачити повторювані патерни у feedback і не губити докази під час продуктових рішень. Про який момент хочеш поговорити детальніше?",
+  };
 };
 const createdProjectsStorageKey = "hyply-created-projects";
 const projectFilesStorageKey = "hyply-project-files";
@@ -1628,6 +1730,7 @@ const createLocalPersonaChatAnswerData = (persona, question, variantIndex = 0) =
   const normalizedQuestion = question.toLowerCase();
   const shortcutAnswer = createPersonaChatShortcutAnswerData(persona, question, variantIndex);
   const firstName = persona.name.split(" ")[0];
+  const localVoice = getPersonaLocalVoiceLines(persona);
   const asksPersonalTaste = /страва|їжа|любиш|улюблен|хобі|вихідн|відпоч|звичк|побут|настр|емоці/.test(normalizedQuestion);
   const asksSensitiveFact = /голосув|політик|адрес|телефон|дохід|зарплат|діагноз|здоров|вік|сімейн|дітей|релігі/.test(
     normalizedQuestion,
@@ -1639,7 +1742,7 @@ const createLocalPersonaChatAnswerData = (persona, question, variantIndex = 0) =
 
   if (asksSensitiveFact) {
     return {
-      answer: "Я не можу надійно відповісти на це питання. У даних немає інформації, яка дозволяє зробити навіть обережне припущення. Можеш краще спитати мене про досвід із продуктом або про те, де я застрягаю?",
+      answer: localVoice.sensitive,
       answerType: "insufficient_data",
       confidence: "low",
       disclaimer: personaChatAnswerMeta.insufficient_data.helper,
@@ -1650,7 +1753,7 @@ const createLocalPersonaChatAnswerData = (persona, question, variantIndex = 0) =
 
   if (asksPersonalTaste) {
     return {
-      answer: `Хм, мабуть, щось дуже просте. Якщо день був важкий, моя улюблена страва - це та, яку не треба довго готувати. А ще краще - яку приготував хтось інший, бо іноді хочеться не ще одного рішення, а просто видихнути. Ти питаєш це, щоб зрозуміти мій побутовий контекст чи швидше стиль прийняття рішень?`,
+      answer: localVoice.personalTaste,
       answerType: "hypothetical",
       confidence: "low",
       disclaimer: personaChatAnswerMeta.hypothetical.helper,
@@ -1667,9 +1770,7 @@ const createLocalPersonaChatAnswerData = (persona, question, variantIndex = 0) =
   }
 
   return {
-    answer:
-      persona.chatAnswer ||
-      `Я б сказала, що мені найважливіше швидше бачити повторювані патерни у feedback і не губити докази під час продуктових рішень. Про який момент хочеш поговорити детальніше?`,
+    answer: localVoice.defaultAnswer,
     answerType: "evidence_based",
     confidence: "high",
     disclaimer: "",
@@ -1769,6 +1870,7 @@ const createPersonaChatPayload = (persona, question, projectName = "") => ({
     profession: persona.profession,
     quotes: persona.quotes || persona.chatQuotes || [],
     summary: persona.summary,
+    voiceProfile: getPersonaVoiceProfile(persona),
   },
   question,
   responseGuidelines: {
@@ -1895,18 +1997,16 @@ const setupPersonaChatModal = (overlay, persona, projectName = "") => {
     scrollToBottom();
 
     answerTimer = window.setTimeout(async () => {
-      let answerData = createPersonaChatShortcutAnswerData(persona, message, shortcutVariantIndex);
+      let answerData = null;
 
-      if (!answerData) {
-        try {
-          answerData = await askPersonaWithApi(persona, message, projectName);
-          if (looksLikePersonaSummaryAnswer(persona, answerData, message)) {
-            answerData = createLocalPersonaChatAnswerData(persona, message, shortcutVariantIndex);
-          }
-        } catch (error) {
-          console.warn("Persona Chat API is unavailable, showing local persona answer", error);
+      try {
+        answerData = await askPersonaWithApi(persona, message, projectName);
+        if (looksLikePersonaSummaryAnswer(persona, answerData, message)) {
           answerData = createLocalPersonaChatAnswerData(persona, message, shortcutVariantIndex);
         }
+      } catch (error) {
+        console.warn("Persona Chat API is unavailable, showing local persona answer", error);
+        answerData = createLocalPersonaChatAnswerData(persona, message, shortcutVariantIndex);
       }
 
       overlay.querySelector("[data-persona-typing]")?.remove();
@@ -2807,7 +2907,7 @@ const createOutputDataFromAnalysis = (projectName) => {
     const motivations = Array.isArray(persona.motivations) ? persona.motivations.filter(Boolean) : [];
     const barriers = Array.isArray(persona.barriers) ? persona.barriers.filter(Boolean) : [];
 
-    return {
+    const normalizedPersona = {
       avatar: personaAvatarVariants[index % personaAvatarVariants.length],
       barriers,
       chatAnswer:
@@ -2825,6 +2925,11 @@ const createOutputDataFromAnalysis = (projectName) => {
       profession: persona.profession || "Користувач продукту",
       quotes,
       summary: persona.summary || "Сформована на основі повторюваних сигналів із завантажених файлів.",
+    };
+
+    return {
+      ...normalizedPersona,
+      voiceProfile: persona.voiceProfile || getPersonaVoiceProfile(normalizedPersona),
     };
   });
 
