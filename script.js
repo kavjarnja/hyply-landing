@@ -1668,9 +1668,10 @@ const looksLikePersonaSummaryAnswer = (persona, answerData, question) => {
   const answer = String(answerData?.answer || "").trim().toLowerCase();
   const summary = String(persona.summary || "").trim().toLowerCase();
   const normalizedQuestion = String(question || "").toLowerCase();
-  const asksLifestyleOrAdvice = /порадь|пригот|вечер|обід|снідан|страва|їжа|любиш|улюблен|хобі|вихідн|відпоч|звичк|побут|настр|емоці/.test(
-    normalizedQuestion,
-  );
+  const asksLifestyleOrAdvice =
+    /порадь|пригот|вечер|вечір|ввечер|увечер|після роботи|перед сном|будн|день проход|рутин|зазвичай займа|чим займаєш|що робиш|як відпоч|обід|снідан|страва|їжа|любиш|улюблен|хобі|вихідн|відпоч|звичк|побут|настр|емоці/.test(
+      normalizedQuestion,
+    );
 
   if (!answer || !asksLifestyleOrAdvice) {
     return false;
@@ -1679,7 +1680,7 @@ const looksLikePersonaSummaryAnswer = (persona, answerData, question) => {
   const hasFirstPerson = /\b(я|мені|мною|моє|моя|мій|мене|я б|чесно|мабуть|хм)\b/i.test(answer);
   const isCloseToSummary = summary && (answer === summary || answer.includes(summary.slice(0, 60)));
   const looksLikeStaticDescription =
-    /^[а-яіїєґa-z ,'-]+, яка |^[а-яіїєґa-z ,'-]+, який |^[а-яіїєґa-z ,'-]+, що /i.test(answer) && !answer.includes("?");
+    /^[а-яіїєґa-z0-9 ,.:'’ʼ-]+, яка |^[а-яіїєґa-z0-9 ,.:'’ʼ-]+, який |^[а-яіїєґa-z0-9 ,.:'’ʼ-]+, що /i.test(answer) && !answer.includes("?");
 
   return !hasFirstPerson && (isCloseToSummary || looksLikeStaticDescription);
 };
@@ -1731,7 +1732,10 @@ const createLocalPersonaChatAnswerData = (persona, question, variantIndex = 0) =
   const shortcutAnswer = createPersonaChatShortcutAnswerData(persona, question, variantIndex);
   const firstName = persona.name.split(" ")[0];
   const localVoice = getPersonaLocalVoiceLines(persona);
-  const asksPersonalTaste = /страва|їжа|любиш|улюблен|хобі|вихідн|відпоч|звичк|побут|настр|емоці/.test(normalizedQuestion);
+  const asksPersonalTaste =
+    /страва|їжа|любиш|улюблен|хобі|вихідн|відпоч|звичк|побут|настр|емоці|вечер|вечір|ввечер|увечер|після роботи|перед сном|будн|рутин|зазвичай займа|чим займаєш|що робиш|як відпоч/.test(
+      normalizedQuestion,
+    );
   const asksSensitiveFact = /голосув|політик|адрес|телефон|дохід|зарплат|діагноз|здоров|вік|сімейн|дітей|релігі/.test(
     normalizedQuestion,
   );
@@ -1853,8 +1857,9 @@ const createPersonaChatAnswer = (persona, answerData = null) => {
 `;
 };
 
-const createPersonaChatPayload = (persona, question, projectName = "") => ({
+const createPersonaChatPayload = (persona, question, projectName = "", conversationHistory = []) => ({
   context: {
+    conversationHistory: conversationHistory.slice(-8),
     evidenceLibrary: (currentOutputData?.evidenceLibraryItems || []).slice(0, 12),
     projectName,
     voiceOfCustomer: (currentOutputData?.vocProblems || []).slice(0, 8),
@@ -1881,7 +1886,7 @@ const createPersonaChatPayload = (persona, question, projectName = "") => ({
   },
 });
 
-const askPersonaWithApi = async (persona, question, projectName = "") => {
+const askPersonaWithApi = async (persona, question, projectName = "", conversationHistory = []) => {
   if (!hyplyApiEndpoint) {
     return null;
   }
@@ -1895,7 +1900,7 @@ const askPersonaWithApi = async (persona, question, projectName = "") => {
 
   try {
     response = await fetch(personaChatEndpoint, {
-      body: JSON.stringify(createPersonaChatPayload(persona, question, projectName)),
+      body: JSON.stringify(createPersonaChatPayload(persona, question, projectName, conversationHistory)),
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -1928,6 +1933,7 @@ const setupPersonaChatModal = (overlay, persona, projectName = "") => {
   const messages = overlay.querySelector("[data-persona-chat-messages]");
   const emptyState = overlay.querySelector("[data-persona-chat-empty]");
   let answerTimer = null;
+  const conversationHistory = [];
   const shortcutUsage = new Map();
   const shortcutVariantSeed = Math.floor(Math.random() * 3);
 
@@ -2000,7 +2006,7 @@ const setupPersonaChatModal = (overlay, persona, projectName = "") => {
       let answerData = null;
 
       try {
-        answerData = await askPersonaWithApi(persona, message, projectName);
+        answerData = await askPersonaWithApi(persona, message, projectName, conversationHistory);
         if (looksLikePersonaSummaryAnswer(persona, answerData, message)) {
           answerData = createLocalPersonaChatAnswerData(persona, message, shortcutVariantIndex);
         }
@@ -2011,6 +2017,13 @@ const setupPersonaChatModal = (overlay, persona, projectName = "") => {
 
       overlay.querySelector("[data-persona-typing]")?.remove();
       messages.insertAdjacentHTML("beforeend", createPersonaChatAnswer(persona, answerData));
+      conversationHistory.push(
+        { role: "user", text: message },
+        { role: "persona", text: String(answerData?.answer || "").trim() },
+      );
+      if (conversationHistory.length > 8) {
+        conversationHistory.splice(0, conversationHistory.length - 8);
+      }
       scrollToBottom();
     }, 1150);
   });
