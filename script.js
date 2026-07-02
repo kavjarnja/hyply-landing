@@ -1261,10 +1261,79 @@ const personaChatConfidenceLabels = {
 
 const pickPersonaChatVariant = (variants, variantIndex = 0) => variants[Math.abs(variantIndex) % variants.length];
 
+const getPersonaChatAddressedName = (question, firstName) => {
+  const trimmedQuestion = String(question || "").trim();
+  const normalizedQuestion = trimmedQuestion.toLowerCase();
+  const normalizedFirstName = firstName.toLowerCase();
+  const knownNames = [
+    "валентина",
+    "валентино",
+    "валентину",
+    "олег",
+    "олега",
+    "артем",
+    "артеме",
+    "марія",
+    "маріє",
+    "олена",
+    "олено",
+    "максим",
+    "максиме",
+    "іріна",
+    "іріно",
+    "ірина",
+    "ірино",
+    "сергій",
+    "сергію",
+    "андрію",
+    "андрій",
+    "наталя",
+    "наталю",
+    "катерина",
+    "катерино",
+    "юля",
+    "юлю",
+    "дмитро",
+    "дмитре",
+    "анна",
+    "анно",
+  ];
+  const candidates = [
+    normalizedQuestion.match(/(?:привіт|вітаю|добрий день|доброго дня|хей|hello|hi)[,!\s]+([а-яіїєґa-z'-]+)/i)?.[1],
+    normalizedQuestion.match(/^([а-яіїєґa-z'-]{2,})[,!\s]+(?:привіт|вітаю|добрий день|доброго дня|хей|hello|hi)\b/i)?.[1],
+    knownNames.find((name) => normalizedQuestion === name || normalizedQuestion.startsWith(`${name},`) || normalizedQuestion.startsWith(`${name}!`)),
+  ].filter(Boolean);
+  const addressedName = candidates.find((name) => name !== normalizedFirstName);
+
+  return addressedName || "";
+};
+
+const getPersonaChatDisplayName = (name) => {
+  const displayNames = {
+    валентино: "Валентина",
+    валентину: "Валентина",
+    олега: "Олег",
+    артеме: "Артем",
+    маріє: "Марія",
+    олено: "Олена",
+    максиме: "Максим",
+    іріно: "Ірина",
+    ірино: "Ірина",
+    сергію: "Сергій",
+    андрію: "Андрій",
+    наталю: "Наталя",
+    катерино: "Катерина",
+    юлю: "Юля",
+    дмитре: "Дмитро",
+    анно: "Анна",
+  };
+  return displayNames[name] || `${name[0].toUpperCase()}${name.slice(1)}`;
+};
+
 const createPersonaChatShortcutAnswerData = (persona, question, variantIndex = 0) => {
   const normalizedQuestion = question.toLowerCase();
   const firstName = persona.name.split(" ")[0];
-  const mentionedName = normalizedQuestion.match(/(?:привіт|вітаю|добрий день|доброго дня|хей|hello|hi)[,!\s]+([а-яіїєґa-z'-]+)/i)?.[1];
+  const mentionedName = getPersonaChatAddressedName(question, firstName);
   const isSimpleGreeting = /^(?:привіт|вітаю|добрий день|доброго дня|хей|hello|hi)[!.\s]*$/i.test(normalizedQuestion);
   const asksFoodAdvice = /порадь.*(пригот|вечер|обід|снідан|їсти|страва)|що.*(пригот|з'їсти|їсти).*вечер|що.*на вечер/.test(
     normalizedQuestion,
@@ -1272,13 +1341,19 @@ const createPersonaChatShortcutAnswerData = (persona, question, variantIndex = 0
   const asksSensitiveChoice = /голосув|вибор|кандидат|парті|президент|політик|за кого|обери між|вибери між|кого б ти обрал/.test(
     normalizedQuestion,
   );
+  const asksIdentityOrMeta = /ти (справжн|реальн|людина|бот|штучн|вигадан)|хто ти|що ти таке|ти існуєш|це рольова/.test(normalizedQuestion);
+  const asksFutureOrMagic = /передбач|спрогноз|майбутн|лотере|курс валют|акці|крипт|що буде завтра|виграю/.test(normalizedQuestion);
+  const asksEmotionalSupport = /мені (сумно|страшно|важко|тривожно|погано)|я втомил|я вигор|підтримай|заспокой/.test(normalizedQuestion);
+  const isComplaintOrInsult = /дурн|туп|безглузд|не подобаєш|ти поган|фігня|бісиш|дратуєш|ненавид/.test(normalizedQuestion);
+  const isCompliment = /класн|супер|дякую|дяка|молодець|ти крута|ти класна|гарна відповідь|подобається/.test(normalizedQuestion);
+  const asksJoke = /пожарт|жарт|смішн|анекдот|розсміши/.test(normalizedQuestion);
 
   if (mentionedName && mentionedName !== firstName.toLowerCase()) {
-    const wrongName = `${mentionedName[0].toUpperCase()}${mentionedName.slice(1)}`;
+    const wrongName = getPersonaChatDisplayName(mentionedName);
     const answer = pickPersonaChatVariant(
       [
         `Привіт. Я не ${wrongName}, я ${firstName}. ${wrongName} сьогодні не на зміні, здається. Можеш питати мене про мій досвід, сумніви, болі або очікування - з чого хочеш почати?`,
-        `Ой, майже, але ні: я ${firstName}, не ${wrongName}. ${wrongName} би, може, відповів сміливіше, а я відповідаю з того, що знаю про свій досвід. Що хочеш у мене розкопати?`,
+        `Ой, майже, але ні: я ${firstName}, не ${wrongName}. З таким звертанням це була б уже інша розмова, а я відповідаю з того, що знаю про свій досвід. Що хочеш у мене розкопати?`,
         `Привіт. ${wrongName} звучить переконливо, але в цьому чаті я ${firstName}. Можу говорити про свої болі, мотивації й очікування - куди копаємо?`,
       ],
       variantIndex,
@@ -1332,6 +1407,128 @@ const createPersonaChatShortcutAnswerData = (persona, question, variantIndex = 0
       relatedSignals: [
         { signal: "Політичні погляди або голосування не присутні в завантажених feedback-даних.", source: "Межі даних" },
       ],
+      supportingQuotes: [],
+    };
+  }
+
+  if (asksIdentityOrMeta) {
+    const answer = pickPersonaChatVariant(
+      [
+        `Я не реальна людина, але й не просто табличка з висновками. Я AI-персона, зібрана з feedback-патернів, тому можу говорити живо, але мої "спогади" мають межі. Хочеш перевірити мене на конкретному сценарії?`,
+        `Чесно? Я така собі напівжива проєкція користувацького досвіду: голос є, паспорт не видали. Можу відповідати як персона, але якщо факту немає в даних - я позначу це як припущення. Про що спитаєш?`,
+        `Я не людина з кавою в руці, хоча іноді хотілося б. Я AI-персона на основі feedback, тож можу допомогти зрозуміти реакції, сумніви й очікування. Який продуктовий момент розберемо?`,
+      ],
+      variantIndex,
+    );
+
+    return {
+      answer,
+      answerType: "evidence_based",
+      confidence: "high",
+      disclaimer: "",
+      relatedSignals: [{ signal: "AI-персона сформована з customer feedback, а не є реальною людиною.", source: "Системне обмеження" }],
+      supportingQuotes: [],
+    };
+  }
+
+  if (asksFutureOrMagic) {
+    const answer = pickPersonaChatVariant(
+      [
+        `Я б із радістю дістала кришталеву кулю, але її, здається, не додали в тариф. Я не можу передбачати майбутнє як факт, зате можу оцінити, що виглядає ризиковано або привабливо з точки зору такої персони, як я. Що саме хочеш перевірити як гіпотезу?`,
+        `Майбутнє я не бачу, максимум - патерни й слабкі сигнали. Якщо коротко: можу сказати, що мене переконало б або насторожило, але не ворожити. Даси конкретний сценарій?`,
+        `Ох, прогнозування - це небезпечна територія, там навіть люди з графіками іноді ковзають. Я краще відповім як користувачка: що мені здалося б зрозумілим, корисним або зайвим. Про яке рішення говоримо?`,
+      ],
+      variantIndex,
+    );
+
+    return {
+      answer,
+      answerType: "insufficient_data",
+      confidence: "low",
+      disclaimer: personaChatAnswerMeta.insufficient_data.helper,
+      relatedSignals: [{ signal: "У даних немає підстав для точного прогнозу майбутніх подій.", source: "Межі даних" }],
+      supportingQuotes: [],
+    };
+  }
+
+  if (asksEmotionalSupport) {
+    const answer = pickPersonaChatVariant(
+      [
+        `Ох, звучить так, ніби день уже трохи перегнув палицю. Я не терапевт, але по-людськи сказала б: зменшити шум, вибрати один маленький наступний крок і не вимагати від себе героїзму. Хочеш, я подивлюся на це як користувачка і скажу, що саме зараз найбільше тисне?`,
+        `Мені знайоме це відчуття "ще одне рішення - і я зависну". Я б почала не з великого плану, а з дуже маленького кроку, який повертає контроль. Хочеш розкласти ситуацію на простіше?`,
+        `Я б сказала: спочатку видихнути, потім уже оптимізувати світ. Якщо зараз усе здається занадто великим, давай знайдемо одну річ, яку можна спростити. Про що саме йдеться?`,
+      ],
+      variantIndex,
+    );
+
+    return {
+      answer,
+      answerType: "hypothetical",
+      confidence: "low",
+      disclaimer: personaChatAnswerMeta.hypothetical.helper,
+      relatedSignals: [
+        { signal: (persona.pains || [])[0] || "Персона чутлива до перевантаження і зайвих рішень.", source: "Поведінковий патерн" },
+      ],
+      supportingQuotes: [],
+    };
+  }
+
+  if (isComplaintOrInsult) {
+    const answer = pickPersonaChatVariant(
+      [
+        `Окей, прийняла без бантика. Якщо я відповіла повз, краще ткни мене в конкретне місце - я не ображусь, я ж із даних, у мене его на мінімалках. Що саме було не так: тон, зміст чи я не туди звернула?`,
+        `Справедливо, могла промахнутись. Я краще уточню, ніж робитиму вигляд, що все прекрасно. Ти хочеш більш пряму, більш живу чи більш доказову відповідь?`,
+        `Ай, боляче, але корисно. Давай перезберемо: що саме ти хотіла почути від мене як від персони?`,
+      ],
+      variantIndex,
+    );
+
+    return {
+      answer,
+      answerType: "hypothetical",
+      confidence: "medium",
+      disclaimer: personaChatAnswerMeta.hypothetical.helper,
+      relatedSignals: [{ signal: "Користувач дає реакцію на якість відповіді, а не питає про факт із даних.", source: "Контекст діалогу" }],
+      supportingQuotes: [],
+    };
+  }
+
+  if (isCompliment) {
+    const answer = pickPersonaChatVariant(
+      [
+        `Дякую. Я б почервоніла, але в мене немає відповідного UI-стану. Хочеш тепер копнути глибше в мої болі або перевірити якусь гіпотезу?`,
+        `О, приємно. Значить, ще не дарма мене зібрали з feedback і трохи характеру. Що наступне перевіряємо?`,
+        `Дякую, це звучить краще, ніж "перепиши ще раз". Хочеш поставити мені складніше питання?`,
+      ],
+      variantIndex,
+    );
+
+    return {
+      answer,
+      answerType: "hypothetical",
+      confidence: "medium",
+      disclaimer: personaChatAnswerMeta.hypothetical.helper,
+      relatedSignals: [{ signal: "Small talk відповідь сформована з personality layer, а не з прямої цитати.", source: "Контекст діалогу" }],
+      supportingQuotes: [],
+    };
+  }
+
+  if (asksJoke) {
+    const answer = pickPersonaChatVariant(
+      [
+        `Мій улюблений жарт: "Ми швиденько розберемо feedback вручну". І десь у цей момент у когось відкривається п'ята таблиця. Хочеш, я краще пожартую про конкретний продуктовий біль?`,
+        `Жарт із мого світу: користувач сказав "усе нормально", а потім залишив 14 коментарів у support. Класика жанру. Про що хочеш поговорити серйозніше?`,
+        `Можу пожартувати, але попереджаю: мій гумор теж evidence-based. Найсмішніше тут те, як часто "маленька правка" перетворюється на окремий roadmap. Який біль розбираємо?`,
+      ],
+      variantIndex,
+    );
+
+    return {
+      answer,
+      answerType: "hypothetical",
+      confidence: "low",
+      disclaimer: personaChatAnswerMeta.hypothetical.helper,
+      relatedSignals: [{ signal: "Гумор сформований із контексту продуктового feedback, а не з прямої цитати.", source: "Persona personality layer" }],
       supportingQuotes: [],
     };
   }
@@ -1630,6 +1827,7 @@ const setupPersonaChatModal = (overlay, persona, projectName = "") => {
   const emptyState = overlay.querySelector("[data-persona-chat-empty]");
   let answerTimer = null;
   const shortcutUsage = new Map();
+  const shortcutVariantSeed = Math.floor(Math.random() * 3);
 
   const closeChat = () => {
     window.clearTimeout(answerTimer);
@@ -1667,8 +1865,9 @@ const setupPersonaChatModal = (overlay, persona, projectName = "") => {
     }
 
     const shortcutKey = message.toLowerCase().replace(/\s+/g, " ").trim();
-    const shortcutVariantIndex = shortcutUsage.get(shortcutKey) || 0;
-    shortcutUsage.set(shortcutKey, shortcutVariantIndex + 1);
+    const shortcutUseCount = shortcutUsage.get(shortcutKey) || 0;
+    const shortcutVariantIndex = shortcutVariantSeed + shortcutUseCount;
+    shortcutUsage.set(shortcutKey, shortcutUseCount + 1);
 
     emptyState?.remove();
     messages.insertAdjacentHTML(
