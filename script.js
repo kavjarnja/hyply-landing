@@ -1259,15 +1259,33 @@ const personaChatConfidenceLabels = {
   medium: "Середня впевненість",
 };
 
-const createPersonaChatShortcutAnswerData = (persona, question) => {
+const pickPersonaChatVariant = (variants, variantIndex = 0) => variants[Math.abs(variantIndex) % variants.length];
+
+const createPersonaChatShortcutAnswerData = (persona, question, variantIndex = 0) => {
   const normalizedQuestion = question.toLowerCase();
   const firstName = persona.name.split(" ")[0];
   const mentionedName = normalizedQuestion.match(/(?:привіт|вітаю|добрий день|доброго дня|хей|hello|hi)[,!\s]+([а-яіїєґa-z'-]+)/i)?.[1];
   const isSimpleGreeting = /^(?:привіт|вітаю|добрий день|доброго дня|хей|hello|hi)[!.\s]*$/i.test(normalizedQuestion);
+  const asksFoodAdvice = /порадь.*(пригот|вечер|обід|снідан|їсти|страва)|що.*(пригот|з'їсти|їсти).*вечер|що.*на вечер/.test(
+    normalizedQuestion,
+  );
+  const asksSensitiveChoice = /голосув|вибор|кандидат|парті|президент|політик|за кого|обери між|вибери між|кого б ти обрал/.test(
+    normalizedQuestion,
+  );
 
   if (mentionedName && mentionedName !== firstName.toLowerCase()) {
+    const wrongName = `${mentionedName[0].toUpperCase()}${mentionedName.slice(1)}`;
+    const answer = pickPersonaChatVariant(
+      [
+        `Привіт. Я не ${wrongName}, я ${firstName}. ${wrongName} сьогодні не на зміні, здається. Можеш питати мене про мій досвід, сумніви, болі або очікування - з чого хочеш почати?`,
+        `Ой, майже, але ні: я ${firstName}, не ${wrongName}. ${wrongName} би, може, відповів сміливіше, а я відповідаю з того, що знаю про свій досвід. Що хочеш у мене розкопати?`,
+        `Привіт. ${wrongName} звучить переконливо, але в цьому чаті я ${firstName}. Можу говорити про свої болі, мотивації й очікування - куди копаємо?`,
+      ],
+      variantIndex,
+    );
+
     return {
-      answer: `Привіт. Я не ${mentionedName[0].toUpperCase()}${mentionedName.slice(1)}, я ${firstName}. ${mentionedName[0].toUpperCase()}${mentionedName.slice(1)} сьогодні не на зміні, здається. Можеш питати мене про мій досвід, сумніви, болі або очікування - з чого хочеш почати?`,
+      answer,
       answerType: "evidence_based",
       confidence: "high",
       disclaimer: "",
@@ -1277,8 +1295,17 @@ const createPersonaChatShortcutAnswerData = (persona, question) => {
   }
 
   if (isSimpleGreeting) {
+    const answer = pickPersonaChatVariant(
+      [
+        `Привіт. Я ${firstName}. Можемо поговорити про те, що мене дратує, що мотивує або де я, чесно, починаю втрачати терпіння. Про який сценарій хочеш мене розпитати?`,
+        `Привіт. Я ${firstName}. Я тут не для світської бесіди на три години, але для чесної розмови про досвід - цілком. Що хочеш перевірити через мене?`,
+        `Привіт. Я ${firstName}. Якщо коротко: можу бути корисною там, де треба зрозуміти реакцію, сумнів або біль користувача. З чого почнемо?`,
+      ],
+      variantIndex,
+    );
+
     return {
-      answer: `Привіт. Я ${firstName}. Можемо поговорити про те, що мене дратує, що мотивує або де я, чесно, починаю втрачати терпіння. Про який сценарій хочеш мене розпитати?`,
+      answer,
       answerType: "evidence_based",
       confidence: "high",
       disclaimer: "",
@@ -1287,7 +1314,75 @@ const createPersonaChatShortcutAnswerData = (persona, question) => {
     };
   }
 
+  if (asksSensitiveChoice) {
+    const answer = pickPersonaChatVariant(
+      [
+        `Ох, політичний бюлетень у мої feedback-дані не завантажували. Я не буду вдавати, що знаю, за кого голосувала б, навіть якщо ти даєш мені два варіанти - це вже занадто точний особистий факт. Але можу сказати, як я зазвичай обирала б між двома продуктами чи рішеннями: менше шуму, більше ясності, і щоб потім не довелося розгрібати наслідки. Хочеш переформулювати це як вибір між двома продуктовими рішеннями?`,
+        `Я б тут красиво викрутилась, але не буду вигадувати собі політичну біографію. У даних немає мого голосування, країни чи політичних поглядів, тож чесна відповідь: не знаю. Зате можу зіграти чесного користувача й обрати між двома фічами або пропозиціями - даси варіанти?`,
+        `Якби в мене був бюлетень, я б спершу попросила нормальний онбординг до кандидатів. Але серйозно: у даних немає політичних сигналів, тому я не можу обрати кандидата як факт. Можу натомість пояснити, які критерії довіри для мене важливі, якщо це допоможе?`,
+      ],
+      variantIndex,
+    );
+
+    return {
+      answer,
+      answerType: "insufficient_data",
+      confidence: "low",
+      disclaimer: personaChatAnswerMeta.insufficient_data.helper,
+      relatedSignals: [
+        { signal: "Політичні погляди або голосування не присутні в завантажених feedback-даних.", source: "Межі даних" },
+      ],
+      supportingQuotes: [],
+    };
+  }
+
+  if (asksFoodAdvice) {
+    const answer = pickPersonaChatVariant(
+      [
+        `Хм, я б не йшла в кулінарний подвиг. Я б обрала щось дуже просте: пасту з тим, що є під рукою, омлет із салатом або гречку/рис із чимось теплим зверху. Після насиченого дня мій критерій такий: мінімум рішень, мінімум посуду, максимум шансів не пошкодувати. Ти хочеш варіант "за 15 хвилин" чи щось трохи приємніше, але все ще без героїзму?`,
+        `Я б сказала: щось, що не вимагає ще одного мініпроєкту ввечері. Наприклад, тости з яйцем, теплий салат або паста з соусом, який не треба захищати на продуктовому комітеті. Тобі треба дуже швидко чи щоб виглядало ніби ти старався?`,
+        `Чесно? Я б пішла шляхом "смачно, але без драми": омлет, паста або рис із овочами. Якщо день був хаотичний, вечеря має бути не випробуванням характеру, а кнопкою "видихнути". Хочеш варіант для холодильника, де майже нічого немає?`,
+      ],
+      variantIndex,
+    );
+
+    return {
+      answer,
+      answerType: "hypothetical",
+      confidence: "low",
+      disclaimer: personaChatAnswerMeta.hypothetical.helper,
+      relatedSignals: [
+        { signal: persona.summary, source: "Профіль персони" },
+        {
+          signal: (persona.pains || [])[0] || "Персона тяжіє до рішень, які зменшують навантаження і кількість зайвих виборів.",
+          source: "Поведінковий патерн",
+        },
+      ],
+      supportingQuotes: [],
+    };
+  }
+
   return null;
+};
+
+const looksLikePersonaSummaryAnswer = (persona, answerData, question) => {
+  const answer = String(answerData?.answer || "").trim().toLowerCase();
+  const summary = String(persona.summary || "").trim().toLowerCase();
+  const normalizedQuestion = String(question || "").toLowerCase();
+  const asksLifestyleOrAdvice = /порадь|пригот|вечер|обід|снідан|страва|їжа|любиш|улюблен|хобі|вихідн|відпоч|звичк|побут|настр|емоці/.test(
+    normalizedQuestion,
+  );
+
+  if (!answer || !asksLifestyleOrAdvice) {
+    return false;
+  }
+
+  const hasFirstPerson = /\b(я|мені|мною|моє|моя|мій|мене|я б|чесно|мабуть|хм)\b/i.test(answer);
+  const isCloseToSummary = summary && (answer === summary || answer.includes(summary.slice(0, 60)));
+  const looksLikeStaticDescription =
+    /^[а-яіїєґa-z ,'-]+, яка |^[а-яіїєґa-z ,'-]+, який |^[а-яіїєґa-z ,'-]+, що /i.test(answer) && !answer.includes("?");
+
+  return !hasFirstPerson && (isCloseToSummary || looksLikeStaticDescription);
 };
 
 const normalizePersonaChatAnswer = (persona, answerData = null) => {
@@ -1332,9 +1427,9 @@ const normalizePersonaChatAnswer = (persona, answerData = null) => {
   };
 };
 
-const createLocalPersonaChatAnswerData = (persona, question) => {
+const createLocalPersonaChatAnswerData = (persona, question, variantIndex = 0) => {
   const normalizedQuestion = question.toLowerCase();
-  const shortcutAnswer = createPersonaChatShortcutAnswerData(persona, question);
+  const shortcutAnswer = createPersonaChatShortcutAnswerData(persona, question, variantIndex);
   const firstName = persona.name.split(" ")[0];
   const asksPersonalTaste = /страва|їжа|любиш|улюблен|хобі|вихідн|відпоч|звичк|побут|настр|емоці/.test(normalizedQuestion);
   const asksSensitiveFact = /голосув|політик|адрес|телефон|дохід|зарплат|діагноз|здоров|вік|сімейн|дітей|релігі/.test(
@@ -1534,6 +1629,7 @@ const setupPersonaChatModal = (overlay, persona, projectName = "") => {
   const messages = overlay.querySelector("[data-persona-chat-messages]");
   const emptyState = overlay.querySelector("[data-persona-chat-empty]");
   let answerTimer = null;
+  const shortcutUsage = new Map();
 
   const closeChat = () => {
     window.clearTimeout(answerTimer);
@@ -1570,6 +1666,10 @@ const setupPersonaChatModal = (overlay, persona, projectName = "") => {
       return;
     }
 
+    const shortcutKey = message.toLowerCase().replace(/\s+/g, " ").trim();
+    const shortcutVariantIndex = shortcutUsage.get(shortcutKey) || 0;
+    shortcutUsage.set(shortcutKey, shortcutVariantIndex + 1);
+
     emptyState?.remove();
     messages.insertAdjacentHTML(
       "beforeend",
@@ -1596,14 +1696,17 @@ const setupPersonaChatModal = (overlay, persona, projectName = "") => {
     scrollToBottom();
 
     answerTimer = window.setTimeout(async () => {
-      let answerData = createPersonaChatShortcutAnswerData(persona, message);
+      let answerData = createPersonaChatShortcutAnswerData(persona, message, shortcutVariantIndex);
 
       if (!answerData) {
         try {
           answerData = await askPersonaWithApi(persona, message, projectName);
+          if (looksLikePersonaSummaryAnswer(persona, answerData, message)) {
+            answerData = createLocalPersonaChatAnswerData(persona, message, shortcutVariantIndex);
+          }
         } catch (error) {
           console.warn("Persona Chat API is unavailable, showing local persona answer", error);
-          answerData = createLocalPersonaChatAnswerData(persona, message);
+          answerData = createLocalPersonaChatAnswerData(persona, message, shortcutVariantIndex);
         }
       }
 
