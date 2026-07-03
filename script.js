@@ -87,6 +87,34 @@ const personaAvatarVariants = [
   "./assets/figma/8291a33c-b0b3-4b8e-a47a-6d74fd8d5d15.png",
   "./assets/figma/05d0f48e-0a49-4f31-af36-3e6d60c4daf8.png",
 ];
+const femalePersonaAvatarVariants = personaAvatarVariants.filter((_, index) => index % 2 === 0);
+const malePersonaAvatarVariants = personaAvatarVariants.filter((_, index) => index % 2 === 1);
+const getStableIndex = (value = "", modulo = 1) => {
+  const text = String(value || "");
+  let hash = 0;
+
+  for (let index = 0; index < text.length; index += 1) {
+    hash = (hash * 31 + text.charCodeAt(index)) >>> 0;
+  }
+
+  return modulo > 0 ? hash % modulo : 0;
+};
+const getPersonaAvatar = (persona = {}) => {
+  if (persona.avatar && !persona.avatar.startsWith("data:")) {
+    return persona.avatar;
+  }
+
+  const gender = inferPersonaGender(persona);
+  const avatarPool =
+    gender === "female"
+      ? femalePersonaAvatarVariants
+      : gender === "male"
+        ? malePersonaAvatarVariants
+        : personaAvatarVariants;
+  const seed = `${gender}:${persona.name || ""}:${persona.profession || ""}:${persona.summary || ""}`;
+
+  return avatarPool[getStableIndex(seed, avatarPool.length)] || personaAvatarVariants[0];
+};
 const analysisStages = [
   {
     label: "Завантаження файлів",
@@ -1177,6 +1205,22 @@ const createOutputTabs = (activeTab = "Personas") => {
       .join("")}
   </nav>
 `;
+};
+
+const keepActiveOutputTabVisible = (root) => {
+  const activeTab = root.querySelector(".output-tabs button.is-active");
+
+  if (!activeTab || !window.matchMedia("(max-width: 900px)").matches) {
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    activeTab.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  });
 };
 
 const createPainCard = (pain) => `
@@ -2566,6 +2610,10 @@ const setupOpportunityInteractions = (root) => {
   const activeTitle = opportunityRoot.querySelector("[data-opportunity-active-title]");
   let activeIndex = 0;
 
+  if (!state.length) {
+    return;
+  }
+
   const getRiceScore = (card) => Math.round((card.reach * card.impact * card.confidence) / card.effort);
 
   const updateCharts = () => {
@@ -2667,6 +2715,7 @@ const renderOutputView = (
     activeVocIndex,
     activeHypothesisIndex,
   );
+  keepActiveOutputTabVisible(cabinetMain);
 
   cabinetMain.querySelectorAll("[data-output-tab]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -2774,7 +2823,7 @@ const setupOutputProjectActions = (
           const input = modal.querySelector("#edit-project-name");
           const form = modal.querySelector("[data-edit-project-form]");
 
-          input.focus();
+          input.focus({ preventScroll: true });
           input.setSelectionRange(input.value.length, input.value.length);
 
           form.addEventListener("submit", (event) => {
@@ -2944,11 +2993,21 @@ const createDemoOutputData = () => ({
   vocSummaryCards,
 });
 
+const createEmptyOutputData = () => ({
+  evidenceLibraryItems: [],
+  hypothesisCards: [],
+  opportunityCards: [],
+  personaPains: [],
+  personas: [],
+  vocProblems: [],
+  vocSummaryCards: [],
+});
+
 const createOutputDataFromAnalysis = (projectName) => {
   const analysis = getStoredProjectAnalysis(projectName);
 
   if (!analysis?.personas?.length && !analysis?.voiceOfCustomer?.length) {
-    return createDemoOutputData();
+    return projectName === "Demo Project" ? createDemoOutputData() : createEmptyOutputData();
   }
 
   const normalizedPersonas = (analysis.personas || []).map((persona, index) => {
@@ -2959,7 +3018,7 @@ const createOutputDataFromAnalysis = (projectName) => {
     const barriers = Array.isArray(persona.barriers) ? persona.barriers.filter(Boolean) : [];
 
     const normalizedPersona = {
-      avatar: personaAvatarVariants[index % personaAvatarVariants.length],
+      avatar: "",
       barriers,
       chatAnswer:
         persona.summary ||
@@ -2978,6 +3037,7 @@ const createOutputDataFromAnalysis = (projectName) => {
       quotes,
       summary: persona.summary || "Сформована на основі повторюваних сигналів із завантажених файлів.",
     };
+    normalizedPersona.avatar = getPersonaAvatar(normalizedPersona);
 
     return {
       ...normalizedPersona,
@@ -3081,13 +3141,13 @@ const createOutputDataFromAnalysis = (projectName) => {
   }));
 
   return {
-    evidenceLibraryItems: normalizedEvidence.length ? normalizedEvidence : evidenceLibraryItems,
-    hypothesisCards: normalizedHypotheses.length ? normalizedHypotheses : hypothesisCards,
-    opportunityCards: normalizedOpportunities.length ? normalizedOpportunities : opportunityCards,
-    personaPains: normalizedPains.length ? normalizedPains : personaPains,
-    personas: normalizedPersonas.length ? normalizedPersonas : personas,
-    vocProblems: normalizedVoc.length ? normalizedVoc : vocProblems,
-    vocSummaryCards: normalizedSummary.length ? normalizedSummary : vocSummaryCards,
+    evidenceLibraryItems: normalizedEvidence,
+    hypothesisCards: normalizedHypotheses,
+    opportunityCards: normalizedOpportunities,
+    personaPains: normalizedPains,
+    personas: normalizedPersonas,
+    vocProblems: normalizedVoc,
+    vocSummaryCards: normalizedSummary,
   };
 };
 
@@ -4315,7 +4375,7 @@ if (document.body.classList.contains("cabinet-body")) {
 
     const firstInput = modal.querySelector("input:not([type='file'])");
     if (firstInput) {
-      firstInput.focus();
+      firstInput.focus({ preventScroll: true });
     }
   };
 
