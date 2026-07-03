@@ -2865,6 +2865,7 @@ const setupOutputProjectActions = (
             writeCreatedProjects(projects);
             deleteProjectFromFirestore(projectName);
             deleteProjectFiles(projectName);
+            deleteProjectAnalysis(projectName);
             window.sessionStorage.setItem(projectToastStorageKey, `Проєкт "${projectName}" видалено`);
             window.location.href = "./cabinet-no-projects.html";
           });
@@ -2888,6 +2889,10 @@ const showOutputView = (projectName) => {
   document.body.classList.remove("is-analysis-running", "is-analysis-success");
   document.body.classList.add("is-output-view");
   renderOutputView(cabinetMain, projectName);
+
+  if (getStoredProjectAnalysis(projectName)) {
+    saveProjectToFirestore(projectName);
+  }
 };
 
 const showThankYouView = (projectName) => {
@@ -2926,6 +2931,25 @@ const writeProjectAnalysis = (projectName, analysis) => {
 
   analysisMap[projectName] = analysis;
   window.localStorage.setItem(projectAnalysisStorageKey, JSON.stringify(analysisMap));
+};
+
+const renameProjectAnalysis = (projectName, nextProjectName) => {
+  const analysisMap = readProjectAnalysisMap();
+
+  if (analysisMap[projectName]) {
+    analysisMap[nextProjectName] = analysisMap[projectName];
+    delete analysisMap[projectName];
+    window.localStorage.setItem(projectAnalysisStorageKey, JSON.stringify(analysisMap));
+  }
+};
+
+const deleteProjectAnalysis = (projectName) => {
+  const analysisMap = readProjectAnalysisMap();
+
+  if (analysisMap[projectName]) {
+    delete analysisMap[projectName];
+    window.localStorage.setItem(projectAnalysisStorageKey, JSON.stringify(analysisMap));
+  }
 };
 
 const getStoredProjectAnalysis = (projectName) => {
@@ -3491,6 +3515,7 @@ const startAnalysisView = (projectName) => {
         writeProjectAnalysis(projectName, analysisResult);
         writeProjectFiles(projectName, analyzedProjectFiles);
         addCreatedProject(projectName);
+        saveProjectToFirestore(projectName);
         renderSidebarProjects();
         showThankYouView(projectName);
       } catch (error) {
@@ -3720,10 +3745,12 @@ const saveProjectToFirestore = async (projectName) => {
   }
 
   const files = readProjectFiles(projectName);
+  const analysis = getStoredProjectAnalysis(projectName);
 
   try {
     await projectsCollection.doc(getFirebaseProjectDocId(projectName)).set(
       {
+        analysis: analysis || null,
         files: createProjectFileSummaries(files),
         name: projectName,
         updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
@@ -3750,6 +3777,8 @@ const deleteProjectFromFirestore = async (projectName) => {
 };
 
 const renameProjectInFirestore = async (oldProjectName, nextProjectName) => {
+  renameProjectAnalysis(oldProjectName, nextProjectName);
+
   if (oldProjectName && oldProjectName !== nextProjectName) {
     await deleteProjectFromFirestore(oldProjectName);
   }
@@ -3766,14 +3795,77 @@ const loadProjectsFromFirestore = async () => {
 
   try {
     const snapshot = await projectsCollection.orderBy("updatedAt", "desc").get();
+    const analysisMap = readProjectAnalysisMap();
+    const filesMap = readProjectFilesMap();
     const projects = snapshot.docs
-      .map((doc) => doc.data()?.name)
+      .map((doc) => {
+        const data = doc.data() || {};
+        const projectName = data.name || "";
+
+        if (projectName && data.analysis) {
+          analysisMap[projectName] = data.analysis;
+        }
+
+        if (projectName && Array.isArray(data.files)) {
+          filesMap[projectName] = data.files.map((file) => ({
+            displaySize: file.displaySize || formatFileSize(file.size),
+            extractionStatus: file.extractionStatus || "metadata-only",
+            name: file.name,
+            size: file.size || 0,
+            text: "",
+            textLength: file.textLength || 0,
+            textTruncated: Boolean(file.textTruncated),
+            type: file.type || getFileExtension(file.name),
+            uploadedAt: file.uploadedAt || new Date().toISOString(),
+          }));
+        }
+
+        return projectName;
+      })
       .filter(Boolean);
 
+    window.localStorage.setItem(projectAnalysisStorageKey, JSON.stringify(analysisMap));
+    window.localStorage.setItem(projectFilesStorageKey, JSON.stringify(filesMap));
     writeCreatedProjects([...new Set(projects)].slice(0, 12));
     renderSidebarProjects();
   } catch (error) {
     console.warn("Projects were not loaded from Firestore", error);
+  }
+};
+
+const loadProjectAnalysisFromFirestore = async (projectName) => {
+  const projectsCollection = getUserProjectCollection();
+
+  if (!projectsCollection || !projectName || getStoredProjectAnalysis(projectName)) {
+    return;
+  }
+
+  try {
+    const doc = await projectsCollection.doc(getFirebaseProjectDocId(projectName)).get();
+    const data = doc.exists ? doc.data() : null;
+
+    if (data?.analysis) {
+      writeProjectAnalysis(projectName, data.analysis);
+    }
+
+    if (Array.isArray(data?.files)) {
+      const filesMap = readProjectFilesMap();
+
+      filesMap[projectName] = data.files.map((file) => ({
+        displaySize: file.displaySize || formatFileSize(file.size),
+        extractionStatus: file.extractionStatus || "metadata-only",
+        name: file.name,
+        size: file.size || 0,
+        text: "",
+        textLength: file.textLength || 0,
+        textTruncated: Boolean(file.textTruncated),
+        type: file.type || getFileExtension(file.name),
+        uploadedAt: file.uploadedAt || new Date().toISOString(),
+      }));
+      window.localStorage.setItem(projectFilesStorageKey, JSON.stringify(filesMap));
+    }
+  } catch (error) {
+    console.warn("Project analysis was not loaded from Firestore", error);
   }
 };
 
@@ -4437,6 +4529,9 @@ if (document.body.classList.contains("cabinet-body")) {
 
   if (document.body.classList.contains("cabinet-has-projects") && requestedProjectName) {
     renderSidebarProjects();
-    showOutputView(requestedProjectName);
+    (async () => {
+      await loadProjectAnalysisFromFirestore(requestedProjectName);
+      showOutputView(requestedProjectName);
+    })();
   }
 }
