@@ -2527,11 +2527,16 @@ const createOutputScreen = (
             ${createBackIcon()}
           </a>
           <h1>${projectName}</h1>
-          <details class="output-action-menu">
+          <div class="output-actions output-actions-desktop">
+            ${createIconButton(figmaAssets.actionEdit, "Редагувати назву проєкту", "edit")}
+            ${createIconButton(figmaAssets.actionUpload, "Дозавантажити дані", "upload")}
+            ${createIconButton(figmaAssets.actionDelete, "Видалити проєкт", "delete")}
+          </div>
+          <details class="output-action-menu output-actions-mobile-menu">
             <summary class="output-more-button" aria-label="Дії з проєктом">
               ${createMoreIcon()}
             </summary>
-            <div class="output-actions">
+            <div class="output-actions output-actions-mobile">
               ${createIconButton(figmaAssets.actionEdit, "Редагувати назву проєкту", "edit")}
               ${createIconButton(figmaAssets.actionUpload, "Дозавантажити дані", "upload")}
               ${createIconButton(figmaAssets.actionDelete, "Видалити проєкт", "delete")}
