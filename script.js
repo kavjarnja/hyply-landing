@@ -3697,6 +3697,33 @@ const initFirebaseServices = () => {
 
 const getFirebaseUser = () => initFirebaseServices().auth?.currentUser || null;
 
+const waitForFirebaseUser = () => {
+  const { auth } = initFirebaseServices();
+
+  if (!auth) {
+    return Promise.resolve(null);
+  }
+
+  const currentUser = auth.currentUser;
+
+  if (currentUser) {
+    return Promise.resolve(currentUser);
+  }
+
+  return new Promise((resolve) => {
+    let unsubscribe = () => {};
+    const timeoutId = window.setTimeout(() => {
+      unsubscribe();
+      resolve(auth.currentUser || null);
+    }, 3500);
+    unsubscribe = auth.onAuthStateChanged((user) => {
+      window.clearTimeout(timeoutId);
+      unsubscribe();
+      resolve(user || null);
+    });
+  });
+};
+
 const getFirebaseProjectDocId = (projectName) => encodeURIComponent(projectName).replace(/\./g, "%2E");
 
 const getUserProjectCollection = () => {
@@ -3834,6 +3861,7 @@ const loadProjectsFromFirestore = async () => {
 };
 
 const loadProjectAnalysisFromFirestore = async (projectName) => {
+  await waitForFirebaseUser();
   const projectsCollection = getUserProjectCollection();
 
   if (!projectsCollection || !projectName || getStoredProjectAnalysis(projectName)) {
@@ -4234,6 +4262,13 @@ const setupFirebaseAuthState = () => {
     window.localStorage.setItem(authStorageKey, "true");
     await syncFirebaseProfile(user);
     await loadProjectsFromFirestore();
+    const requestedProjectName = getProjectNameFromUrl();
+
+    if (document.body.classList.contains("cabinet-has-projects") && requestedProjectName) {
+      await loadProjectAnalysisFromFirestore(requestedProjectName);
+      showOutputView(requestedProjectName);
+    }
+
     setupLoggedInLandingHeader();
   });
 };
